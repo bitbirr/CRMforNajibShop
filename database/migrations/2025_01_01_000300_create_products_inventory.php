@@ -19,17 +19,14 @@ $t->timestamps();
 
 
 Schema::create('inventory_items', function (Blueprint $t) {
-$t->bigIncrements('id');
+$t->uuid('id')->primary();
 $t->uuid('product_id');
 $t->uuid('branch_id');
-$t->decimal('quantity',14,2)->default(0);
-$t->decimal('reserved_quantity',14,2)->default(0);
-$t->integer('reorder_level')->default(0);
-$t->timestamps();
+$t->decimal('qty_on_hand',18,2)->default(0);
 $t->unique(['product_id','branch_id']);
 $t->foreign('product_id')->references('id')->on('products');
 $t->foreign('branch_id')->references('id')->on('branches');
-$t->index(['branch_id']);
+$t->timestampsTz();
 });
 
 
@@ -37,13 +34,16 @@ Schema::create('stock_movements', function (Blueprint $t) {
 $t->bigIncrements('id');
 $t->uuid('product_id');
 $t->uuid('branch_id');
-$t->decimal('qty',14,2);
+$t->decimal('qty',18,2);
 $t->enum('type',[ 'OPENING','RECEIVE','SALE','ADJUST','TRANSFER_OUT','TRANSFER_IN' ]);
 $t->string('ref_table')->nullable();
 $t->string('ref_id')->nullable();
 $t->uuid('created_by');
-$t->timestamp('created_at')->useCurrent();
+$t->timestampTz('created_at')->useCurrent();
 $t->index(['branch_id','created_at']);
+$t->foreign('product_id')->references('id')->on('products');
+$t->foreign('branch_id')->references('id')->on('branches');
+$t->foreign('created_by')->references('id')->on('users');
 });
 }
 public function down(): void

@@ -13,8 +13,11 @@ $t->uuid('from_branch_id');
 $t->uuid('to_branch_id');
 $t->uuid('created_by');
 $t->enum('status',[ 'DRAFT','SENT','RECEIVED','CANCELLED' ])->default('DRAFT');
-$t->timestamp('created_at')->useCurrent();
+$t->timestampTz('created_at')->useCurrent();
 $t->index(['from_branch_id','to_branch_id']);
+$t->foreign('from_branch_id')->references('id')->on('branches');
+$t->foreign('to_branch_id')->references('id')->on('branches');
+$t->foreign('created_by')->references('id')->on('users');
 });
 
 
@@ -22,8 +25,10 @@ Schema::create('transfer_lines', function (Blueprint $t) {
 $t->bigIncrements('id');
 $t->uuid('header_id');
 $t->uuid('product_id');
-$t->decimal('qty',14,2);
+$t->decimal('qty',18,2);
 $t->index('header_id');
+$t->foreign('header_id')->references('id')->on('transfer_headers')->cascadeOnDelete();
+$t->foreign('product_id')->references('id')->on('products');
 });
 }
 public function down(): void
